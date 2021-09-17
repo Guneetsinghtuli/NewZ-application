@@ -11,7 +11,7 @@ export class Newsitem extends Component {
         return (
             <div>
                 <div className="card">
-                    <span className="position-absolute top-0 translate-middle badge rounded-pill bg-info text-dark" style={{zIndex:'1',left:'86%'}}>
+                    <span className="position-absolute top-0 badge bg-info text-dark" style={{zIndex:'1',right:'0'}}>
                         {source}
                     <span className="visually-hidden">unread messages</span>
                     </span>
