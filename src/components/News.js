@@ -1,89 +1,83 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import Newsitem from './Newsitem'
 import PropTypes from 'prop-types';
 import InfiniteScroll from 'react-infinite-scroll-component'
+import Loader from './Loader';
 
-export class News extends Component {
+const News = (props) => {
 
-    constructor() {
-        super()
-        this.state = {
-            data: [],
-            currentPage: 1,
-            loading: true,
-        }
+    const [data, setData] = useState([]);
+    const [currentPage, setPage] = useState(1);
+    const [page, settotalPage] = useState(1)
+    const [loading, setLoading] = useState(true)
+
+    const capitalise = (str) => {
+        return (str.slice(0, 1)).toUpperCase() + str.slice(1)
     }
-    capitalise = (str)=>{
-        return (str.slice(0,1)).toUpperCase() + str.slice(1)
-    }
-    async componentDidMount() {
-        this.props.setProgress(30)
-        this.setState({ loading: true })
-        const url = `https://newsapi.org/v2/top-headlines?q=${this.props.country}&apiKey=${this.props.apiKey}&page=1&pageSize=10&language=en&category=${this.props.category}`;
+
+    const updateNews = async () => {
+        props.setProgress(30)
+        setLoading(true)
+        const url = `https://newsapi.org/v2/top-headlines?q=${props.country}&apiKey=${props.apiKey}&page=1&pageSize=10&language=en&category=${props.category}`;
         const data = await fetch(url);
         const { articles, totalResults } = await data.json();
-        this.props.setProgress(70)
-        this.setState({
-            data: articles,
-            page: totalResults,
-            loading: false,
-        })
-        this.props.setProgress(100)
-        document.title= `NewZ-${this.capitalise(this.props.category)}`
+        settotalPage(totalResults)
+        props.setProgress(70)
+        setData(articles)
+        setLoading(false)
+        props.setProgress(100)
+        document.title = `NewZ-${capitalise(props.category)}`
+
     }
 
-    fetchMoreData = async() => {
-        this.props.setProgress(30)
-        this.setState({ loading: false })
-        const url = `https://newsapi.org/v2/top-headlines?q=${this.props.country}&apiKey=${this.props.apiKey}&page=${this.state.currentPage + 1}&pageSize=10&language=en&category=${this.props.category}`;
-        let data = await fetch(url);
-        let parsedData = await data.json()
-        this.props.setProgress(70)
-        this.setState({
-            data: this.state.data.concat(parsedData.articles),
-            currentPage: this.state.currentPage + 1,
-            loading: false
-        })
-        this.props.setProgress(100);
-        
+
+    useEffect(() => {
+        updateNews();
+    },[])
+    // async componentDidMount() {
+
+    // }
+
+    const fetchMoreData = async () => {
+        props.setProgress(30)
+        setLoading(false)
+        const url = `https://newsapi.org/v2/top-headlines?q=${props.country}&apiKey=${props.apiKey}&page=${currentPage + 1}&pageSize=10&language=en&category=${props.category}`;
+        let newdata = await fetch(url);
+        let parsedData = await newdata.json()
+        props.setProgress(70)
+        setData(data.concat(parsedData.articles))
+        setPage(currentPage + 1)
+        setLoading(false)
+        props.setProgress(100);
     };
 
-
-
-    render() {
-        return (
-            <>
-                <div className="container" style={{marginTop:'100px'}}>
-                    <h1>Trending News</h1>
-
-                    
-                    <InfiniteScroll
-                    dataLength={this.state.data.length}
-                    next={this.fetchMoreData}
-                    hasMore={this.state.data.length !== this.state.page}
-                    loader={<div className=" container my-4 d-flex justify-content-center">
-                        <div className="spinner-border text-secondary" style={{ width: '3rem', height: '3rem' }} role="status">
-                            <span className="sr-only"></span>
-                        </div>
-                    </div>}
-                    >
+    return (
+        <>
+            <div className="container" style={{ marginTop: '100px' }}>
+                <h1>Trending News</h1>
+                {loading && <Loader />}
+                <InfiniteScroll
+                    dataLength={data.length - 1}
+                    next={fetchMoreData}
+                    hasMore={data.length !== page}
+                    loader={<Loader />}
+                >
                     <div className="row my-3">
-                    {this.state.data.map((da) => {
+                        {data.map((da) => {
                             return (
                                 <div className="col-md-4 my-3 " key={da.url}>
                                     <Newsitem title={da.title} content={da.description} img={da.urlToImage} url={da.url} author={da.author} time={da.publishedAt} source={da.source.name} />
                                 </div>
                             )
                         })}
-                        </div>
+                    </div>
                 </InfiniteScroll>
 
 
-                </div>
-            </>
+            </div>
+        </>
 
-        )
-    }
+    )
 }
 
 

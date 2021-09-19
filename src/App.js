@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
 
 export class App extends Component {
-    apiKey="b0225e62a4834a1eb79f4b37ae7ab63a";
+    apiKey=process.env.REACT_APP_API_KEY;
     constructor(){
         super()
         this.state = {
