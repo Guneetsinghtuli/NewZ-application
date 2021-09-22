@@ -9,7 +9,6 @@ const News = (props) => {
   const [data, setData] = useState([]);
   const [currentPage, setPage] = useState(1);
   const [page, settotalPage] = useState(1)
-  const [loading, setLoading] = useState(true)
 
   const capitalise = (str) => {
     return (str.slice(0, 1)).toUpperCase() + str.slice(1)
@@ -25,7 +24,6 @@ const News = (props) => {
   
   const updateNews = useCallback(async () => {
     _setProgress(30);
-    setLoading(true);
     const url = `https://newsapi.org/v2/top-headlines?q=${props.country}&apiKey=${props.apiKey}&page=1&pageSize=10&language=en&category=${props.category}`;
     const data = await fetch(url);
     const { status, code, articles, totalResults } = await data.json();
@@ -37,7 +35,6 @@ const News = (props) => {
 
       setData(articles)
     }
-    setLoading(false)
     _setProgress(100);
     document.title = `NewZ-${capitalise(props.category)}`
   }, [props.country, props.category, _setProgress, props.apiKey]);
@@ -51,7 +48,6 @@ const News = (props) => {
 
   const fetchMoreData = async () => {
     _setProgress(30)
-    setLoading(false)
     const url = `https://newsapi.org/v2/top-headlines?q=${props.country}&apiKey=${props.apiKey}&page=${currentPage + 1}&pageSize=10&language=en&category=${props.category}`;
     let newdata = await fetch(url);
     const { status, code, articles } = await newdata.json();
@@ -62,7 +58,6 @@ const News = (props) => {
       setData(data.concat(articles))
       setPage(currentPage + 1)
     }
-    setLoading(false)
     _setProgress(100);
   };
 
@@ -70,11 +65,10 @@ const News = (props) => {
     <>
       <div className="container" style={{ marginTop: '100px' }}>
         <h1>Trending News</h1>
-        {loading && <Loader />}
         <InfiniteScroll
           dataLength={data.length - 1}
           next={fetchMoreData}
-          hasMore={data.length > page}
+          hasMore={data.length < page}
           loader={<Loader />}
         >
           <div className="row my-3">
